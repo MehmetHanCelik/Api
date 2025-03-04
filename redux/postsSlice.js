@@ -2,37 +2,25 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
-// API'den gelen verileri Türkçeye çevirme fonksiyonu
-const translateToTurkish = (data) => {
-    return data.map((item, index) => ({
-        id: item.id,
-        title: [
-            'Hoş Geldiniz!',
-            'Steam Nedir?',
-            'İndirimler',
-            'En Popüler Oyunlar',
-            'Haberler'
-        ][index % 5], // Döngüyle farklı başlıklar kullan
-        body: [
-            'Bu uygulama React Native ile geliştirilmiştir.',
-            'Steam, dijital oyun platformudur.',
-            'Steam üzerinde sık sık büyük indirimler olur.',
-            'CS:GO, Dota 2, PUBG gibi oyunlar Steam’de popülerdir.',
-            'Steam yeni özellikler getirmeye devam ediyor!'
-        ][index % 5] // Döngüyle farklı açıklamalar kullan
-    }));
-};
 
-export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-    const response = await fetch(API_URL);
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (page, { getState }) => {
+    const limit = 10;
+    const response = await fetch(`${API_URL}?_limit=${limit}&_page=${page}`);
     const data = await response.json();
-    return translateToTurkish(data); // Gelen verileri Türkçeye çevir
+
+
+    const previousData = getState().posts.data;
+    return page === 1 ? data : [...previousData, ...data];
 });
 
 const postsSlice = createSlice({
     name: 'posts',
-    initialState: { data: [], loading: false, error: null },
-    reducers: {},
+    initialState: { data: [], page: 1, loading: false, error: null },
+    reducers: {
+        refreshPosts: (state) => {
+            state.page = 1;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchPosts.pending, (state) => {
@@ -41,12 +29,14 @@ const postsSlice = createSlice({
             .addCase(fetchPosts.fulfilled, (state, action) => {
                 state.loading = false;
                 state.data = action.payload;
+                state.page += 1;
             })
             .addCase(fetchPosts.rejected, (state) => {
                 state.loading = false;
-                state.error = 'Veriler alınamadı!';
+                state.error = 'Veriler alinamadi!';
             });
     },
 });
 
+export const { refreshPosts } = postsSlice.actions;
 export default postsSlice.reducer;
