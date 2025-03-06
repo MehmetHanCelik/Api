@@ -7,8 +7,6 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (page, { ge
     const limit = 10;
     const response = await fetch(`${API_URL}?_limit=${limit}&_page=${page}`);
     const data = await response.json();
-
-
     const previousData = getState().posts.data;
     return page === 1 ? data : [...previousData, ...data];
 });
@@ -17,7 +15,8 @@ const postsSlice = createSlice({
     name: 'posts',
     initialState: { data: [], page: 1, loading: false, error: null },
     reducers: {
-        refreshPosts: (state) => {
+        resetPosts: (state) => {
+            state.data = [];
             state.page = 1;
         }
     },
@@ -33,10 +32,10 @@ const postsSlice = createSlice({
             })
             .addCase(fetchPosts.rejected, (state) => {
                 state.loading = false;
-                state.error = 'Veriler alinamadi!';
+                state.error = 'Veri Alinamadi';
             });
     },
 });
 
-export const { refreshPosts } = postsSlice.actions;
+export const { resetPosts } = postsSlice.actions;
 export default postsSlice.reducer;

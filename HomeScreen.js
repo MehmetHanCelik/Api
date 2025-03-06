@@ -1,11 +1,15 @@
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchPosts, refreshPosts } from './redux/postsSlice';
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchPosts, resetPosts } from "./redux/postsSlice";
+import i18n, { setLanguage } from './i18n';
+
 
 const HomeScreen = () => {
     const dispatch = useDispatch();
     const { data, page, loading, error } = useSelector((state) => state.posts);
+
+    const [currentLang, setCurrentLang] = useState(i18n.locale);
 
     useEffect(() => {
         dispatch(fetchPosts(1));
@@ -18,20 +22,34 @@ const HomeScreen = () => {
     };
 
     const handleRefresh = () => {
-        dispatch(refreshPosts());
+        dispatch(resetPosts());
         dispatch(fetchPosts(1));
+    };
+
+    const changeLanguage = (language) => {
+        setLanguage(language);
+        setCurrentLang(language);
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Api Örneği</Text>
-            <Text style={styles.subtitle}>Aşşağiya kaydirarak özelliğin çaliştiğini görebilirsiniz.</Text>
+            <Text style={styles.title}>{i18n.t("Hoşgeldiniz")}</Text>
 
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.langButton} onPress={() => changeLanguage("tr")}>
+                    <Text style={styles.buttonText}>Türkçe</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.langButton} onPress={() => changeLanguage("en")}>
+                    <Text style={styles.buttonText}>English</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.langButton} onPress={() => changeLanguage("de")}>
+                    <Text style={styles.buttonText}>German</Text>
+                </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleRefresh}>
-                <Text style={styles.buttonText}>🔄Yenile</Text>
+            <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+                <Text style={styles.buttonText}>{i18n.t("fetch_data")}</Text>
             </TouchableOpacity>
-
 
             {loading && data.length === 0 ? (
                 <ActivityIndicator size="large" color="#007bff" />
@@ -47,11 +65,10 @@ const HomeScreen = () => {
                     )}
                     onEndReached={loadMore}
                     onEndReachedThreshold={0.5}
-                    refreshing={loading}
-                    onRefresh={handleRefresh}
                     ListFooterComponent={loading ? <ActivityIndicator size="large" color="#007bff" /> : null}
                 />
             )}
+            {error && <Text style={styles.error}>{error}</Text>}
         </View>
     );
 };
@@ -59,40 +76,48 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f4f4f4',
+        backgroundColor: "#f2f2f2",
         padding: 20,
+        paddingTop: 40,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
-        color: '#333',
-    },
-    subtitle: {
-        fontSize: 16,
-        textAlign: 'center',
+        fontSize: 28,
+        fontWeight: "bold",
+        textAlign: "center",
         marginBottom: 20,
-        color: '#555',
+        color: "#333",
     },
-    button: {
-        backgroundColor: '#007bff',
-        padding: 10,
-        borderRadius: 8,
-        alignItems: 'center',
+    buttonContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginBottom: 20,
+    },
+    langButton: {
+        backgroundColor: "#28a745",
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        marginHorizontal: 5,
+        borderRadius: 5,
+    },
+    refreshButton: {
+        backgroundColor: "#007bff",
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        alignSelf: "center",
         marginBottom: 20,
     },
     buttonText: {
-        color: 'white',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     post: {
-        backgroundColor: 'white',
+        backgroundColor: "#fff",
         padding: 15,
         marginVertical: 5,
         borderRadius: 8,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 3,
         shadowOffset: { width: 0, height: 2 },
@@ -100,9 +125,14 @@ const styles = StyleSheet.create({
     },
     postTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 5,
-        color: '#333',
+        color: "#333",
+    },
+    error: {
+        color: "red",
+        textAlign: "center",
+        marginTop: 10,
     },
 });
 
