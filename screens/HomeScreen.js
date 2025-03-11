@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchPosts, resetPosts } from "./redux/postsSlice";
-import i18n, { setLanguage } from './i18n';
+import { fetchPosts, resetPosts } from "../redux/postsSlice";
+import i18n, { setLanguage } from '../i18n';
 
 
 const HomeScreen = () => {
